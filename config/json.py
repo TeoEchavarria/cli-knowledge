@@ -10,8 +10,10 @@ yagami = [
             "description": "Create a new task",
             "attributes": [
               {"name": "title", "alias":"t", "type": str, "required": True, "description": "Title of the task"},
+              {"name": "list", "alias":"l", "type": str, "required": False, "description": "List associated with the task"},
               {"name": "categories", "alias":"c", "type": str, "required": False, "description": "List of categories associated with the task"},
-              {"name": "notes",  "alias":"n", "type": str, "required": False, "description": "List of note IDs to link to the task"}
+              {"name": "notes",  "alias":"n", "type": str, "required": False, "description": "List of note IDs to link to the task"},
+              {"name": "status",  "alias":"s", "type": str, "required": False, "description": "Status to the task"}
             ]
           },
           {
