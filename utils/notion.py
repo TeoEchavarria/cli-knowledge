@@ -2,12 +2,10 @@ import json
 import re
 
 def create_notion_block(content_list, block_type='paragraph'):
-    if block_type == 'code':
-        # This is for multi-line code blocks
+    if block_type in ['code', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item', 'quote']:
         return {
-            "code": {
-                "rich_text": [{"text": {"content": "\n".join(content_list)}}],
-                "language": "python"  # Default language, can be adjusted as needed
+            block_type: {
+                "rich_text": [{"text": {"content": content_list if isinstance(content_list, str) else "\n".join(content_list)}}]
             }
         }
     else:
@@ -29,20 +27,20 @@ def create_rich_text(content, is_code=False, url=None):
 def markdown_to_notion(md_text):
     notion_blocks = []
     lines = md_text.split('\n')
-    link_regex = re.compile(r'$begin:math:display$([^$end:math:display$]+)\]$begin:math:text$([^)]+)$end:math:text$')
-    image_regex = re.compile(r'!$begin:math:display$([^$end:math:display$]*)\]$begin:math:text$([^)]+)$end:math:text$')
+    link_regex = re.compile(r'\[([^\]]+)\]\(([^)]+)\)')
+    image_regex = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
     code_block = False
     code_content = []
 
     for line in lines:
         if line.startswith('```'):
             if code_block:
-                # End of code block, append it as a separate block
+                # End of code block
                 notion_blocks.append(create_notion_block(code_content, 'code'))
                 code_block = False
                 code_content = []
             else:
-                # Start of a new code block
+                # Start of code block
                 code_block = True
             continue
 
@@ -51,6 +49,25 @@ def markdown_to_notion(md_text):
             continue
 
         if not line.strip():
+            continue
+
+        if line.startswith('# '):
+            notion_blocks.append(create_notion_block(line[2:], 'heading_1'))
+            continue
+        elif line.startswith('## '):
+            notion_blocks.append(create_notion_block(line[3:], 'heading_2'))
+            continue
+        elif line.startswith('### '):
+            notion_blocks.append(create_notion_block(line[4:], 'heading_3'))
+            continue
+        elif line.startswith('- '):
+            notion_blocks.append(create_notion_block(line[2:], 'bulleted_list_item'))
+            continue
+        elif re.match(r'\d+\. ', line):
+            notion_blocks.append(create_notion_block(line[line.find('. ')+2:], 'numbered_list_item'))
+            continue
+        elif line.startswith('> '):
+            notion_blocks.append(create_notion_block(line[2:], 'quote'))
             continue
 
         rich_text_list = []
@@ -68,7 +85,7 @@ def markdown_to_notion(md_text):
         if rich_text_list:
             notion_blocks.append(create_notion_block(rich_text_list))
 
-    # If the markdown ends with an unclosed code block
+    # Check for unclosed code block at end of text
     if code_block:
         notion_blocks.append(create_notion_block(code_content, 'code'))
 
