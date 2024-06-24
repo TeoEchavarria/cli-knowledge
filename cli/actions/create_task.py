@@ -37,6 +37,6 @@ def run(args):
     # }
     # Añade más propiedades según la estructura de tu base de datos
 }
-    print(content)
+    print( content)
     # Añade la tarea a la base de datos
     new_task = create("task", new_task_properties, content)
