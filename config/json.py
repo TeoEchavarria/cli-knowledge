@@ -21,7 +21,7 @@ yagami = [
             "alias": "r",
             "description": "Read a task",
             "attributes": [
-              {"name": "title", "alias":"t", "type": str, "required": True, "description": "Title of the task to read"},
+              {"name": "title", "alias":"t", "type": str, "required": False, "description": "Title of the task to read"},
               {"name": "list", "alias":"l", "type": str, "required": False, "description": "List associated with the task to read"},
               {"name": "category", "alias":"c", "type": str, "required": False, "description": "Category associated with the task to read"},
               {"name": "notes",  "alias":"n", "type": str, "required": False, "description": "Note ID to link to the task to read"},
@@ -71,7 +71,7 @@ yagami = [
             "alias": "r",
             "description": "Read a note",
             "attributes": [
-              {"name": "title", "alias":"t", "type": str, "required": True, "description": "Title of the note to read"},
+              {"name": "title", "alias":"t", "type": str, "required": False, "description": "Title of the note to read"},
               {"name": "list", "alias":"l", "type": str, "required": False, "description": "List associated with the note to read"},
               {"name": "category", "alias":"c", "type": str, "required": False, "description": "Category associated with the note to read"},
               {"name": "note_id", "alias":"ti", "type": str, "required": False, "description": "ID of the note to read"}
@@ -91,7 +91,7 @@ yagami = [
             "alias": "d",
             "description": "Delete a note",
             "attributes": [
-              {"name": "note_id", "alias":"ni", "type": str, "required": True, "description": "ID of the note to delete"},
+              {"name": "note_id", "alias":"ni", "type": str, "required": False, "description": "ID of the note to delete"},
               {"name": "list", "alias":"l", "type": str, "required": False, "description": "List associated with the note to delete"},
               {"name": "categories", "alias":"c", "type": str, "required": False, "description": "List of categories of the note to delete"}
             ]

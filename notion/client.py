@@ -6,3 +6,14 @@ notion = Client(auth=token_notion)
 def create(type, properties, childrens):
     database_id = task_id_database if type == "task" else note_id_database
     notion.pages.create(parent={"database_id": database_id}, properties=properties, children=childrens)
+    
+def query(type, properties):
+    database_id = task_id_database if type == "task" else note_id_database
+    response = notion.databases.query(
+        **{
+            "database_id": database_id,
+            "filter": properties
+        }
+    )
+
+    return response
