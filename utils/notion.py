@@ -1,19 +1,34 @@
 import re
+import json
 
-def create_notion_block(content_list, block_type='paragraph'):
-    if block_type in ['code', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item', 'quote', 'image', 'divider']:
+def create_notion_block(content, block_type='paragraph'):
+    if block_type == 'equation':
+        # Equation block requires 'expression' instead of 'rich_text'
         return {
+            "object": "block",
+            "type": block_type,
             block_type: {
-                "rich_text": [{"text": {"content": content_list if isinstance(content_list, str) else "\n".join(content_list)}}]
+                "expression": content
+            }
+        }
+    elif block_type in ['code', 'heading_1', 'heading_2', 'heading_3', 'bulleted_list_item', 'numbered_list_item', 'quote', 'image', 'divider']:
+        return {
+            "object": "block",
+            "type": block_type,
+            block_type: {
+                "rich_text": [{"text": {"content": content if isinstance(content, str) else "\n".join(content)}}]
             }
         }
     else:
         # This is for normal text and inline code
         return {
+            "object": "block",
+            "type": "paragraph",
             "paragraph": {
-                "rich_text": content_list
+                "rich_text": [{"text": {"content": content}}] if isinstance(content, str) else content
             }
         }
+
 
 def create_rich_text(content, is_code=False, url=None):
     text_structure = {"text": {"content": content}}
@@ -34,6 +49,11 @@ def markdown_to_notion(md_text):
     code_content = []
 
     for line in lines:
+        if block_latex_regex.search(line):
+            latex_content = block_latex_regex.findall(line)[0].strip()
+            notion_blocks.append(create_notion_block(latex_content, 'equation'))
+            continue
+
         if line.startswith('```'):
             if code_block:
                 notion_blocks.append(create_notion_block(code_content, 'code'))
@@ -48,12 +68,6 @@ def markdown_to_notion(md_text):
             continue
 
         if not line.strip():
-            continue
-        
-        if block_latex_regex.search(line):
-            # Extract and process block LaTeX
-            latex_content = block_latex_regex.findall(line)[0].strip()
-            notion_blocks.append(create_notion_block(latex_content, 'equation'))
             continue
 
         # Headings, lists, quotes
@@ -72,14 +86,14 @@ def markdown_to_notion(md_text):
         elif line.startswith('---'):
             notion_blocks.append(create_notion_block("", 'divider'))
         else:
-            # Inline code, links, images
+            # Inline code, links, images, and inline LaTeX
             rich_text_list = []
             parts = re.split(r'(`[^`]*`)', line)  # Split line into parts for normal text and inline code
             for part in parts:
                 if part.startswith('`') and part.endswith('`'):
                     rich_text_list.append(create_rich_text(part[1:-1], is_code=True))
                 else:
-                    # Handle links and images in normal text parts
+                    part = re.sub(inline_latex_regex, lambda match: f"LaTeX: {match.group(1)}", part)
                     part = re.sub(link_regex, lambda match: f"{match.group(1)} (URL: {match.group(2)})", part)
                     part = re.sub(image_regex, lambda match: f"Image: {match.group(1)} (URL: {match.group(2)})", part)
                     rich_text_list.append(create_rich_text(part))
