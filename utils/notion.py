@@ -1,6 +1,24 @@
 import re
 import json
 
+def create_equation(expression):
+    return {
+        "type": "equation",
+        "equation": {
+            "expression": expression
+        },
+        "annotations": {
+            "bold": False,
+            "italic": False,
+            "strikethrough": False,
+            "underline": False,
+            "code": False,
+            "color": "default"
+        },
+        "plain_text": expression,
+        "href": None
+    }
+
 def create_notion_block(content, block_type='paragraph'):
     if block_type == 'equation':
         # Equation block requires 'expression' instead of 'rich_text'
@@ -88,17 +106,26 @@ def markdown_to_notion(md_text):
         else:
             # Inline code, links, images, and inline LaTeX
             rich_text_list = []
-            parts = re.split(r'(`[^`]*`)', line)  # Split line into parts for normal text and inline code
+            # Split line into normal text and LaTeX parts
+            parts = re.split(inline_latex_regex, line)
+            is_latex = False  # Track whether the next part is LaTeX
+
             for part in parts:
-                if part.startswith('`') and part.endswith('`'):
-                    rich_text_list.append(create_rich_text(part[1:-1], is_code=True))
+                if is_latex:
+                    rich_text_list.append(create_equation(part))
                 else:
-                    part = re.sub(inline_latex_regex, lambda match: f"LaTeX: {match.group(1)}", part)
+                    # Process normal text for links and images
                     part = re.sub(link_regex, lambda match: f"{match.group(1)} (URL: {match.group(2)})", part)
                     part = re.sub(image_regex, lambda match: f"Image: {match.group(1)} (URL: {match.group(2)})", part)
-                    rich_text_list.append(create_rich_text(part))
+                    if part.startswith('`') and part.endswith('`'):
+                        rich_text_list.append(create_rich_text(part[1:-1], is_code=True))
+                    else:
+                        rich_text_list.append(create_rich_text(part))
+                is_latex = not is_latex
+
             if rich_text_list:
-                notion_blocks.append(create_notion_block(rich_text_list))
+                notion_blocks.append(create_notion_block(rich_text_list, 'paragraph'))
+
 
     # Check for unclosed code block at the end of text
     if code_block:

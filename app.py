@@ -3,6 +3,7 @@ from cli.main import commands_creator
 from config.json import yagami
 from importlib import import_module
 from utils.argparse import translate_args
+from utils.files import initial_markdown_to_list_dict
 
 def main():
     parser = argparse.ArgumentParser(description="Task management script")
@@ -15,4 +16,4 @@ def main():
     function(args)
     
 if __name__ == "__main__":
-    main()
+    initial_markdown_to_list_dict()

@@ -1,8 +1,9 @@
 from notion.client import create
 from utils.cli import open_file
 
-def run(args):
-    content = open_file()
+def run(args, content = None):
+    if content == None:
+        content = open_file()
     new_note_properties = {
     "Title": {
         "title": [
