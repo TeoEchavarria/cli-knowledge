@@ -1,6 +1,7 @@
 
 def initial_markdown_to_list_dict():
     from cli.actions.create_note import run
+    from utils.notion import markdown_to_notion
     import os
 
     # Definir la ruta de la carpeta
@@ -10,9 +11,9 @@ def initial_markdown_to_list_dict():
         if filename.endswith('.md'):  # Asegurarse de que el archivo es un Markdown
             file_path = os.path.join(folder_path, filename)
             with open(file_path, 'r', encoding='utf-8') as file:
-                contenido_md = file.read()
+                contenido_md = markdown_to_notion(file.read())
                 # Aplicar la función al contenido
-                print(contenido_md, filename.replace("md"))
+                run({ "title": filename.replace("md", ""), "list": None, "categories": None}, contenido_md)
                 #resultado = run({}, contenido_md)
                 print(f'Resultado para {filename}')
 
